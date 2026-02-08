@@ -1,0 +1,668 @@
+local Players=game:GetService("Players")
+local Workspace=game:GetService("Workspace")
+local RunService=game:GetService("RunService")
+local LocalPlayer=Players.LocalPlayer
+local SETTINGS={ESP_Enabled=false,Godmode_Enabled=false,Noclip_Enabled=false,Item_Color=Color3.fromRGB(0,255,127),Enemy_Color=Color3.fromRGB(255,50,50),Player_Color=Color3.fromRGB(0,150,255),RefreshInterval=2}
+local ScreenGui=Instance.new("ScreenGui")
+ScreenGui.Name="PiggyV5"
+ScreenGui.ResetOnSpawn=false
+ScreenGui.Parent=game:GetService("CoreGui")
+local MainFrame=Instance.new("Frame")
+MainFrame.Parent=ScreenGui
+MainFrame.BackgroundColor3=Color3.fromRGB(25,25,30)
+MainFrame.Position=UDim2.new(0.5,-200,0.5,-150)
+MainFrame.Size=UDim2.new(0,400,0,335)
+MainFrame.Active=true
+MainFrame.Draggable=true
+local Title=Instance.new("TextLabel")
+Title.Parent=MainFrame
+Title.BackgroundColor3=Color3.fromRGB(180,0,0)
+Title.Size=UDim2.new(1,0,0,35)
+Title.Text="PIGGY V5"
+Title.TextColor3=Color3.new(1,1,1)
+Title.Font=Enum.Font.GothamBold
+Title.TextSize=16
+local MinimizeBtn=Instance.new("TextButton")
+MinimizeBtn.Parent=MainFrame
+MinimizeBtn.Position=UDim2.new(1,-70,0,0)
+MinimizeBtn.Size=UDim2.new(0,35,0,35)
+MinimizeBtn.Text="-"
+MinimizeBtn.BackgroundColor3=Color3.fromRGB(100,100,0)
+MinimizeBtn.TextColor3=Color3.new(1,1,1)
+MinimizeBtn.Font=Enum.Font.GothamBold
+MinimizeBtn.TextSize=20
+local CloseBtn=Instance.new("TextButton")
+CloseBtn.Parent=MainFrame
+CloseBtn.Position=UDim2.new(1,-35,0,0)
+CloseBtn.Size=UDim2.new(0,35,0,35)
+CloseBtn.Text="X"
+CloseBtn.BackgroundColor3=Color3.fromRGB(150,0,0)
+CloseBtn.TextColor3=Color3.new(1,1,1)
+local ContentFrame=Instance.new("Frame")
+ContentFrame.Parent=MainFrame
+ContentFrame.BackgroundTransparency=1
+ContentFrame.Position=UDim2.new(0,0,0,35)
+ContentFrame.Size=UDim2.new(1,0,1,-35)
+local LeftSide=Instance.new("Frame")
+LeftSide.Parent=ContentFrame
+LeftSide.BackgroundTransparency=1
+LeftSide.Position=UDim2.new(0,10,0,10)
+LeftSide.Size=UDim2.new(0,170,0,280)
+local ToggleESPBtn=Instance.new("TextButton")
+ToggleESPBtn.Parent=LeftSide
+ToggleESPBtn.Size=UDim2.new(1,0,0,35)
+ToggleESPBtn.Text="ESP: OFF"
+ToggleESPBtn.BackgroundColor3=Color3.fromRGB(50,50,55)
+ToggleESPBtn.TextColor3=Color3.new(1,1,1)
+ToggleESPBtn.Font=Enum.Font.GothamBold
+ToggleESPBtn.TextSize=14
+local ToggleGodmodeBtn=Instance.new("TextButton")
+ToggleGodmodeBtn.Parent=LeftSide
+ToggleGodmodeBtn.Position=UDim2.new(0,0,0,45)
+ToggleGodmodeBtn.Size=UDim2.new(1,0,0,35)
+ToggleGodmodeBtn.Text="ANTI-PIGGY: OFF"
+ToggleGodmodeBtn.BackgroundColor3=Color3.fromRGB(50,50,55)
+ToggleGodmodeBtn.TextColor3=Color3.new(1,1,1)
+ToggleGodmodeBtn.Font=Enum.Font.GothamBold
+ToggleGodmodeBtn.TextSize=14
+local ToggleNoclipBtn=Instance.new("TextButton")
+ToggleNoclipBtn.Parent=LeftSide
+ToggleNoclipBtn.Position=UDim2.new(0,0,0,90)
+ToggleNoclipBtn.Size=UDim2.new(1,0,0,35)
+ToggleNoclipBtn.Text="NOCLIP: OFF"
+ToggleNoclipBtn.BackgroundColor3=Color3.fromRGB(50,50,55)
+ToggleNoclipBtn.TextColor3=Color3.new(1,1,1)
+ToggleNoclipBtn.Font=Enum.Font.GothamBold
+ToggleNoclipBtn.TextSize=14
+local RefreshBtn=Instance.new("TextButton")
+RefreshBtn.Parent=LeftSide
+RefreshBtn.Position=UDim2.new(0,0,0,135)
+RefreshBtn.Size=UDim2.new(1,0,0,35)
+RefreshBtn.Text="REFRESH"
+RefreshBtn.BackgroundColor3=Color3.fromRGB(60,60,65)
+RefreshBtn.TextColor3=Color3.new(1,1,1)
+RefreshBtn.Font=Enum.Font.GothamBold
+RefreshBtn.TextSize=14
+local InputBox=Instance.new("TextBox")
+InputBox.Parent=LeftSide
+InputBox.Position=UDim2.new(0,0,0,180)
+InputBox.Size=UDim2.new(1,0,0,40)
+InputBox.PlaceholderText="Select Item"
+InputBox.Text=""
+InputBox.BackgroundColor3=Color3.fromRGB(40,40,45)
+InputBox.TextColor3=Color3.new(1,1,1)
+InputBox.Font=Enum.Font.SourceSans
+InputBox.TextSize=14
+local TeleportBtn=Instance.new("TextButton")
+TeleportBtn.Parent=LeftSide
+TeleportBtn.Position=UDim2.new(0,0,0,230)
+TeleportBtn.Size=UDim2.new(1,0,0,50)
+TeleportBtn.Text="TP & GRAB"
+TeleportBtn.BackgroundColor3=Color3.fromRGB(0,150,0)
+TeleportBtn.TextColor3=Color3.new(1,1,1)
+TeleportBtn.Font=Enum.Font.GothamBold
+TeleportBtn.TextSize=16
+local ScrollList=Instance.new("ScrollingFrame")
+ScrollList.Parent=ContentFrame
+ScrollList.Position=UDim2.new(0.5,5,0,10)
+ScrollList.Size=UDim2.new(0.45,0,1,-20)
+ScrollList.BackgroundColor3=Color3.fromRGB(20,20,25)
+ScrollList.ScrollBarThickness=2
+ScrollList.CanvasSize=UDim2.new(0,0,0,0)
+local UIList=Instance.new("UIListLayout")
+UIList.Parent=ScrollList
+UIList.Padding=UDim.new(0,3)
+local espCache={}
+local itemsList={}
+local gameStarted=false
+local isMinimized=false
+local lastItemCount=0
+local lastRefreshTime=0
+local hasScannedOnce=false
+local function getCurrentMap()
+for _,obj in pairs(Workspace:GetChildren())do
+if obj:IsA("Folder")or obj:IsA("Model")then
+local lowerName=string.lower(obj.Name)
+if string.find(lowerName,"temple")then
+return "temple"
+end
+if string.find(lowerName,"factory")then
+return "factory"
+end
+if string.find(lowerName,"lab")then
+return "lab"
+end
+end
+end
+return "other"
+end
+local function isPiggyBot(model)
+if not model:IsA("Model")or not model:FindFirstChild("Humanoid")then
+return false
+end
+local name=string.lower(model.Name)
+if string.find(name,"dummy")then
+return false
+end
+for _,player in pairs(Players:GetPlayers())do
+if player.Character==model then
+return false
+end
+end
+local currentMap=getCurrentMap()
+local alwaysFriendly={"george","zee","zuzy","mimi","giraffy","kona","william","katie","pony"}
+for _,friendlyName in pairs(alwaysFriendly)do
+if string.find(name,friendlyName)then
+return false
+end
+end
+if currentMap=="temple" and string.find(name,"robby")then
+return false
+end
+if currentMap=="lab" and(string.find(name,"willow")or string.find(name,"tigry"))then
+return false
+end
+if currentMap=="factory" and string.find(name,"tigry")then
+return false
+end
+if string.find(name,"mr") and string.find(name,"p")then
+return "boss"
+end
+local enemyNames={"piggy","bot","infected","monster","bunny","doggy","beary","clown","foxy","mous","elly","teacher","sheepy","penny","grandmother","grandfather","robby","mr. stitchy","badgy","billy","pandy","kitty","dino","parasee","daisy","torcher","soldier","poley","ghost","rash","owell","spider","crawl","devil","angel","mari","memory"}
+for _,enemyName in pairs(enemyNames)do
+if string.find(name,enemyName)then
+return true
+end
+end
+if string.find(name,"willow")or string.find(name,"tigry")then
+if currentMap~="lab" and currentMap~="factory"then
+return true
+end
+end
+return false
+end
+local killedBots={}
+local function killPiggyBot(piggy)
+if killedBots[piggy]then
+return
+end
+killedBots[piggy]=true
+pcall(function()
+for _,part in pairs(piggy:GetDescendants())do
+if part:IsA("BasePart")then
+part.CanCollide=false
+part.CanTouch=false
+if part.Anchored then
+part.Anchored=false
+end
+end
+end
+if piggy:FindFirstChild("HumanoidRootPart")then
+local hrp=piggy.HumanoidRootPart
+for _,v in pairs(hrp:GetChildren())do
+if v:IsA("BodyMover")or v:IsA("BodyVelocity")or v:IsA("BodyGyro")then
+v:Destroy()
+end
+end
+hrp.Anchored=false
+local bv=Instance.new("BodyVelocity")
+bv.Name="PiggyKiller"
+bv.Velocity=Vector3.new(0,-500,0)
+bv.MaxForce=Vector3.new(math.huge,math.huge,math.huge)
+bv.Parent=hrp
+end
+end)
+end
+local function cleanupAllBots()
+for _,model in pairs(Workspace:GetDescendants())do
+if model:IsA("Model")and model:FindFirstChild("HumanoidRootPart")then
+local hrp=model:FindFirstChild("HumanoidRootPart")
+for _,v in pairs(hrp:GetChildren())do
+if v.Name=="PiggyKiller"then
+v:Destroy()
+end
+end
+for _,part in pairs(model:GetDescendants())do
+if part:IsA("BasePart")then
+part.CanCollide=true
+part.CanTouch=true
+end
+end
+end
+end
+end
+spawn(function()
+while wait(0.5)do
+if SETTINGS.Godmode_Enabled then
+for _,model in pairs(Workspace:GetDescendants())do
+local botType=isPiggyBot(model)
+if botType==true then
+killPiggyBot(model)
+end
+end
+end
+end
+end)
+Workspace.DescendantAdded:Connect(function(obj)
+wait(0.1)
+if SETTINGS.Godmode_Enabled then
+local botType=isPiggyBot(obj)
+if botType==true then
+killPiggyBot(obj)
+end
+end
+end)
+local function isItemUsable(obj)
+if not obj or not obj.Parent then
+return false
+end
+local clickDet=obj:FindFirstChild("ClickDetector")
+local proxPrompt=obj:FindFirstChild("ProximityPrompt")
+if not(clickDet or proxPrompt)then
+return false
+end
+local current=obj
+while current do
+if current==Workspace then
+return true
+end
+if(current:IsA("Model")and current:FindFirstChild("Humanoid"))or current:IsA("Backpack")then
+return false
+end
+current=current.Parent
+end
+return true
+end
+local function isValidName(name)
+if not name or name=="" or #name>50 then
+return false
+end
+if tonumber(name)then
+return false
+end
+local lowerName=string.lower(name)
+local blacklist={"door","house","panel","safe","event","plank","board","wall","floor","window","vent","comic","baseplate","spawn","camera","terrain","code"}
+for _,word in pairs(blacklist)do
+if string.find(lowerName,word)then
+return false
+end
+end
+return true
+end
+local function getBestName(obj)
+if obj:IsA("Tool")then
+return obj.Name
+end
+local tool=obj:FindFirstAncestorOfClass("Tool")
+if tool then
+return tool.Name
+end
+local model=obj:FindFirstAncestorOfClass("Model")
+if model and model~=Workspace and not model:FindFirstChild("Humanoid")then
+if isValidName(model.Name)then
+return model.Name
+end
+end
+return obj.Name
+end
+local function isPiggyPlayer(player)
+if player and player:FindFirstChild("PlayerGui")then
+local gui=player.PlayerGui
+if gui:FindFirstChild("Piggy")or gui:FindFirstChild("PiggyUI")or gui:FindFirstChild("Trap")then
+return true
+end
+end
+if player.Team and player.Team.Name then
+local teamName=string.lower(player.Team.Name)
+if string.find(teamName,"piggy")or string.find(teamName,"infected")or string.find(teamName,"bot")then
+return true
+end
+end
+return false
+end
+local function applyESP(obj,color,displayName)
+if espCache[obj]then
+return
+end
+pcall(function()
+local hl=Instance.new("Highlight")
+hl.Name="PiggyESP"
+hl.FillColor=color
+hl.OutlineColor=Color3.new(1,1,1)
+hl.FillTransparency=0.5
+hl.OutlineTransparency=0
+hl.Parent=obj
+local bb=Instance.new("BillboardGui")
+bb.Name="PiggyTag"
+bb.AlwaysOnTop=true
+bb.Size=UDim2.new(0,100,0,30)
+bb.StudsOffset=Vector3.new(0,3,0)
+bb.Parent=obj
+local lbl=Instance.new("TextLabel")
+lbl.Parent=bb
+lbl.BackgroundTransparency=1
+lbl.Size=UDim2.new(1,0,1,0)
+lbl.Text=displayName
+lbl.TextColor3=color
+lbl.Font=Enum.Font.GothamBold
+lbl.TextSize=12
+lbl.TextStrokeTransparency=0.5
+espCache[obj]=true
+end)
+end
+local function clearESP(obj)
+if obj then
+pcall(function()
+for _,child in pairs(obj:GetChildren())do
+if child.Name=="PiggyESP" or child.Name=="PiggyTag" then
+child:Destroy()
+end
+end
+espCache[obj]=nil
+end)
+end
+end
+local function scanItems()
+itemsList={}
+local found={}
+local totalCount=0
+for _,obj in pairs(Workspace:GetDescendants())do
+if isItemUsable(obj)then
+local name=getBestName(obj)
+if isValidName(name)then
+if not found[name]then
+found[name]=0
+itemsList[name]={}
+end
+found[name]=found[name]+1
+totalCount=totalCount+1
+table.insert(itemsList[name],obj)
+end
+end
+end
+return found,totalCount
+end
+local function updateUI()
+for _,child in pairs(ScrollList:GetChildren())do
+if child:IsA("TextButton")or child:IsA("TextLabel")then
+child:Destroy()
+end
+end
+local found,totalCount=scanItems()
+if totalCount>0 then
+gameStarted=true
+hasScannedOnce=true
+end
+if not hasScannedOnce then
+local label=Instance.new("TextLabel")
+label.Parent=ScrollList
+label.Size=UDim2.new(1,0,0,30)
+label.BackgroundTransparency=1
+label.Text="Wait for game start"
+label.TextColor3=Color3.fromRGB(200,200,0)
+label.Font=Enum.Font.SourceSansBold
+label.TextSize=14
+else
+lastItemCount=totalCount
+if next(found)==nil then
+local label=Instance.new("TextLabel")
+label.Parent=ScrollList
+label.Size=UDim2.new(1,0,0,30)
+label.BackgroundTransparency=1
+label.Text="No items found"
+label.TextColor3=Color3.fromRGB(0,255,0)
+label.Font=Enum.Font.SourceSansBold
+label.TextSize=14
+else
+for name,count in pairs(found)do
+local btn=Instance.new("TextButton")
+btn.Parent=ScrollList
+btn.Size=UDim2.new(1,0,0,30)
+btn.Text=name.." ("..count..")"
+btn.BackgroundColor3=Color3.fromRGB(45,45,50)
+btn.TextColor3=Color3.new(1,1,1)
+btn.Font=Enum.Font.SourceSans
+btn.TextSize=14
+btn.MouseButton1Click:Connect(function()
+InputBox.Text=name
+end)
+end
+end
+end
+ScrollList.CanvasSize=UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y)
+end
+spawn(function()
+while wait(1)do
+if not hasScannedOnce then
+updateUI()
+if gameStarted then
+hasScannedOnce=true
+end
+end
+end
+end)
+spawn(function()
+while wait(SETTINGS.RefreshInterval)do
+if hasScannedOnce and tick()-lastRefreshTime>=SETTINGS.RefreshInterval then
+local _,currentItemCount=scanItems()
+if currentItemCount~=lastItemCount then
+lastRefreshTime=tick()
+RefreshBtn.Text="Auto..."
+RefreshBtn.BackgroundColor3=Color3.fromRGB(0,150,150)
+wait(0.1)
+updateUI()
+wait(0.2)
+RefreshBtn.Text="REFRESH"
+RefreshBtn.BackgroundColor3=Color3.fromRGB(60,60,65)
+end
+end
+end
+end)
+task.wait(0.5)
+updateUI()
+local itemAddedDebounce=false
+Workspace.DescendantAdded:Connect(function(obj)
+if itemAddedDebounce then
+return
+end
+wait(0.1)
+if obj:FindFirstChild("ClickDetector")or obj:FindFirstChild("ProximityPrompt")then
+gameStarted=true
+hasScannedOnce=true
+itemAddedDebounce=true
+wait(0.5)
+updateUI()
+itemAddedDebounce=false
+end
+end)
+RunService.Stepped:Connect(function()
+local char=LocalPlayer.Character
+if char then
+for _,part in pairs(char:GetDescendants())do
+if part:IsA("BasePart")then
+if SETTINGS.Noclip_Enabled then
+part.CanCollide=false
+else
+if part.Name~="HumanoidRootPart" then
+part.CanCollide=true
+end
+end
+end
+end
+end
+end)
+local lastUpdate=0
+RunService.Heartbeat:Connect(function()
+if not SETTINGS.ESP_Enabled or tick()-lastUpdate<1 then
+return
+end
+lastUpdate=tick()
+for obj,_ in pairs(espCache)do
+if not obj.Parent then
+clearESP(obj)
+end
+end
+for _,player in pairs(Players:GetPlayers())do
+if player~=LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart")then
+applyESP(player.Character,isPiggyPlayer(player)and SETTINGS.Enemy_Color or SETTINGS.Player_Color,player.Name)
+end
+end
+for _,model in pairs(Workspace:GetDescendants())do
+local botType=isPiggyBot(model)
+if botType==true then
+applyESP(model,SETTINGS.Enemy_Color,"Piggy")
+elseif botType=="boss" then
+applyESP(model,Color3.fromRGB(255,0,255),"MR. P")
+end
+end
+for name,objects in pairs(itemsList)do
+for _,obj in pairs(objects)do
+if obj and obj.Parent and isItemUsable(obj)then
+applyESP(obj,SETTINGS.Item_Color,name)
+end
+end
+end
+end)
+ToggleESPBtn.MouseButton1Click:Connect(function()
+SETTINGS.ESP_Enabled=not SETTINGS.ESP_Enabled
+ToggleESPBtn.Text=SETTINGS.ESP_Enabled and "ESP: ON" or "ESP: OFF"
+ToggleESPBtn.TextColor3=SETTINGS.ESP_Enabled and Color3.new(0,1,0)or Color3.new(1,1,1)
+if not SETTINGS.ESP_Enabled then
+for obj,_ in pairs(espCache)do
+clearESP(obj)
+end
+espCache={}
+end
+end)
+ToggleGodmodeBtn.MouseButton1Click:Connect(function()
+SETTINGS.Godmode_Enabled=not SETTINGS.Godmode_Enabled
+ToggleGodmodeBtn.Text=SETTINGS.Godmode_Enabled and "ANTI-PIGGY: ON" or "ANTI-PIGGY: OFF"
+ToggleGodmodeBtn.TextColor3=SETTINGS.Godmode_Enabled and Color3.new(0,1,0)or Color3.new(1,1,1)
+if not SETTINGS.Godmode_Enabled then
+cleanupAllBots()
+end
+killedBots={}
+end)
+ToggleNoclipBtn.MouseButton1Click:Connect(function()
+SETTINGS.Noclip_Enabled=not SETTINGS.Noclip_Enabled
+ToggleNoclipBtn.Text=SETTINGS.Noclip_Enabled and "NOCLIP: ON" or "NOCLIP: OFF"
+ToggleNoclipBtn.TextColor3=SETTINGS.Noclip_Enabled and Color3.new(0,1,0)or Color3.new(1,1,1)
+if not SETTINGS.Noclip_Enabled then
+local char=LocalPlayer.Character
+if char then
+for _,part in pairs(char:GetDescendants())do
+if part:IsA("BasePart")and part.Name~="HumanoidRootPart"then
+part.CanCollide=true
+end
+end
+end
+end
+end)
+RefreshBtn.MouseButton1Click:Connect(function()
+RefreshBtn.Text="Loading..."
+RefreshBtn.BackgroundColor3=Color3.fromRGB(100,100,0)
+wait(0.2)
+updateUI()
+lastRefreshTime=tick()
+RefreshBtn.Text="REFRESH"
+RefreshBtn.BackgroundColor3=Color3.fromRGB(60,60,65)
+end)
+TeleportBtn.MouseButton1Click:Connect(function()
+local targetName=InputBox.Text
+if targetName=="" then
+return
+end
+local char=LocalPlayer.Character
+if not char or not char:FindFirstChild("HumanoidRootPart")then
+return
+end
+local startPosition=char.HumanoidRootPart.CFrame
+if itemsList[targetName]then
+for _,obj in pairs(itemsList[targetName])do
+if obj and obj.Parent and isItemUsable(obj)then
+local targetCF
+if obj:IsA("Model")then
+local primaryPart=obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+if primaryPart then
+targetCF=primaryPart.CFrame
+end
+elseif obj:IsA("BasePart")then
+targetCF=obj.CFrame
+else
+local part=obj:FindFirstChildWhichIsA("BasePart")
+if part then
+targetCF=part.CFrame
+end
+end
+if targetCF then
+TeleportBtn.Text="TP..."
+TeleportBtn.BackgroundColor3=Color3.fromRGB(100,100,0)
+char.HumanoidRootPart.CFrame=targetCF*CFrame.new(0,3,0)
+wait(0.3)
+TeleportBtn.Text="Grab..."
+local clickDet=obj:FindFirstChild("ClickDetector")
+local proxPrompt=obj:FindFirstChild("ProximityPrompt")
+if clickDet then
+pcall(function()
+if fireclickdetector then
+fireclickdetector(clickDet)
+else
+local oldDist=clickDet.MaxActivationDistance
+clickDet.MaxActivationDistance=math.huge
+wait(0.1)
+clickDet.MouseClick:Fire()
+wait(0.1)
+clickDet.MaxActivationDistance=oldDist
+end
+end)
+elseif proxPrompt then
+pcall(function()
+if fireproximityprompt then
+fireproximityprompt(proxPrompt)
+else
+local oldDist=proxPrompt.MaxActivationDistance
+local oldLOS=proxPrompt.RequiresLineOfSight
+proxPrompt.MaxActivationDistance=math.huge
+proxPrompt.RequiresLineOfSight=false
+wait(0.1)
+proxPrompt:InputHoldBegin()
+wait(proxPrompt.HoldDuration or 0.5)
+proxPrompt:InputHoldEnd()
+wait(0.1)
+proxPrompt.MaxActivationDistance=oldDist
+proxPrompt.RequiresLineOfSight=oldLOS
+end
+end)
+end
+wait(0.3)
+TeleportBtn.Text="Return..."
+TeleportBtn.BackgroundColor3=Color3.fromRGB(0,100,150)
+char.HumanoidRootPart.CFrame=startPosition
+wait(0.5)
+updateUI()
+lastRefreshTime=tick()
+wait(0.5)
+TeleportBtn.Text="TP & GRAB"
+TeleportBtn.BackgroundColor3=Color3.fromRGB(0,150,0)
+break
+end
+end
+end
+end
+end)
+MinimizeBtn.MouseButton1Click:Connect(function()
+isMinimized=not isMinimized
+if isMinimized then
+MainFrame:TweenSize(UDim2.new(0,400,0,35),"Out","Quad",0.3,true)
+MinimizeBtn.Text="+"
+ContentFrame.Visible=false
+else
+MainFrame:TweenSize(UDim2.new(0,400,0,335),"Out","Quad",0.3,true)
+MinimizeBtn.Text="-"
+ContentFrame.Visible=true
+end
+end)
+CloseBtn.MouseButton1Click:Connect(function()
+ScreenGui:Destroy()
+end)
+print("Piggy V5 Clean")
