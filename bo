@@ -119,90 +119,62 @@ local isMinimized=false
 local lastItemCount=0
 local lastRefreshTime=0
 local hasScannedOnce=false
+local disabledParts={}
+
 local function getCurrentMap()
 for _,obj in pairs(Workspace:GetChildren())do
 if obj:IsA("Folder")or obj:IsA("Model")then
 local lowerName=string.lower(obj.Name)
-if string.find(lowerName,"temple")then
-return "temple"
-end
-if string.find(lowerName,"factory")then
-return "factory"
-end
-if string.find(lowerName,"lab")then
-return "lab"
+if string.find(lowerName,"temple")then return"temple"end
+if string.find(lowerName,"factory")then return"factory"end
+if string.find(lowerName,"lab")then return"lab"end
 end
 end
+return"other"
 end
-return "other"
-end
+
 local function isPiggyBot(model)
-if not model:IsA("Model")or not model:FindFirstChild("Humanoid")then
-return false
-end
+if not model:IsA("Model")or not model:FindFirstChild("Humanoid")then return false end
 local name=string.lower(model.Name)
-if string.find(name,"dummy")then
-return false
-end
+if string.find(name,"dummy")then return false end
 for _,player in pairs(Players:GetPlayers())do
-if player.Character==model then
-return false
-end
+if player.Character==model then return false end
 end
 local currentMap=getCurrentMap()
 local alwaysFriendly={"george","zee","zuzy","mimi","giraffy","kona","william","katie","pony"}
 for _,friendlyName in pairs(alwaysFriendly)do
-if string.find(name,friendlyName)then
-return false
+if string.find(name,friendlyName)then return false end
 end
-end
-if currentMap=="temple" and string.find(name,"robby")then
-return false
-end
-if currentMap=="lab" and(string.find(name,"willow")or string.find(name,"tigry"))then
-return false
-end
-if currentMap=="factory" and string.find(name,"tigry")then
-return false
-end
-if string.find(name,"mr") and string.find(name,"p")then
-return "boss"
-end
+if currentMap=="temple"and string.find(name,"robby")then return false end
+if currentMap=="lab"and(string.find(name,"willow")or string.find(name,"tigry"))then return false end
+if currentMap=="factory"and string.find(name,"tigry")then return false end
+if string.find(name,"mr")and string.find(name,"p")then return"boss"end
 local enemyNames={"piggy","bot","infected","monster","bunny","doggy","beary","clown","foxy","mous","elly","teacher","sheepy","penny","grandmother","grandfather","robby","mr. stitchy","badgy","billy","pandy","kitty","dino","parasee","daisy","torcher","soldier","poley","ghost","rash","owell","spider","crawl","devil","angel","mari","memory"}
 for _,enemyName in pairs(enemyNames)do
-if string.find(name,enemyName)then
-return true
-end
+if string.find(name,enemyName)then return true end
 end
 if string.find(name,"willow")or string.find(name,"tigry")then
-if currentMap~="lab" and currentMap~="factory"then
-return true
-end
+if currentMap~="lab"and currentMap~="factory"then return true end
 end
 return false
 end
+
 local killedBots={}
 local function killPiggyBot(piggy)
-if killedBots[piggy]then
-return
-end
+if killedBots[piggy]then return end
 killedBots[piggy]=true
 pcall(function()
 for _,part in pairs(piggy:GetDescendants())do
 if part:IsA("BasePart")then
 part.CanCollide=false
 part.CanTouch=false
-if part.Anchored then
-part.Anchored=false
-end
+if part.Anchored then part.Anchored=false end
 end
 end
 if piggy:FindFirstChild("HumanoidRootPart")then
 local hrp=piggy.HumanoidRootPart
 for _,v in pairs(hrp:GetChildren())do
-if v:IsA("BodyMover")or v:IsA("BodyVelocity")or v:IsA("BodyGyro")then
-v:Destroy()
-end
+if v:IsA("BodyMover")or v:IsA("BodyVelocity")or v:IsA("BodyGyro")then v:Destroy()end
 end
 hrp.Anchored=false
 local bv=Instance.new("BodyVelocity")
@@ -213,14 +185,39 @@ bv.Parent=hrp
 end
 end)
 end
+
+local function disableInvisibleWalls()
+for _,obj in pairs(Workspace:GetDescendants())do
+if obj:IsA("BasePart")then
+local name=string.lower(obj.Name)
+if obj.Transparency>=0.9 or name:find("invisible")or name:find("barrier")or name:find("trigger")or name:find("collider")then
+if not disabledParts[obj]then
+disabledParts[obj]={
+CanCollide=obj.CanCollide,
+Transparency=obj.Transparency
+}
+obj.CanCollide=false
+end
+end
+end
+end
+end
+
+local function restoreInvisibleWalls()
+for part,props in pairs(disabledParts)do
+if part and part.Parent then
+part.CanCollide=props.CanCollide
+end
+end
+disabledParts={}
+end
+
 local function cleanupAllBots()
 for _,model in pairs(Workspace:GetDescendants())do
 if model:IsA("Model")and model:FindFirstChild("HumanoidRootPart")then
 local hrp=model:FindFirstChild("HumanoidRootPart")
 for _,v in pairs(hrp:GetChildren())do
-if v.Name=="PiggyKiller"then
-v:Destroy()
-end
+if v.Name=="PiggyKiller"then v:Destroy()end
 end
 for _,part in pairs(model:GetDescendants())do
 if part:IsA("BasePart")then
@@ -231,99 +228,76 @@ end
 end
 end
 end
+
 spawn(function()
 while wait(0.5)do
 if SETTINGS.Godmode_Enabled then
 for _,model in pairs(Workspace:GetDescendants())do
 local botType=isPiggyBot(model)
-if botType==true then
-killPiggyBot(model)
-end
+if botType==true then killPiggyBot(model)end
 end
 end
 end
 end)
+
 Workspace.DescendantAdded:Connect(function(obj)
 wait(0.1)
 if SETTINGS.Godmode_Enabled then
 local botType=isPiggyBot(obj)
-if botType==true then
-killPiggyBot(obj)
-end
+if botType==true then killPiggyBot(obj)end
 end
 end)
+
 local function isItemUsable(obj)
-if not obj or not obj.Parent then
-return false
-end
+if not obj or not obj.Parent then return false end
 local clickDet=obj:FindFirstChild("ClickDetector")
 local proxPrompt=obj:FindFirstChild("ProximityPrompt")
-if not(clickDet or proxPrompt)then
-return false
-end
+if not(clickDet or proxPrompt)then return false end
 local current=obj
 while current do
-if current==Workspace then
-return true
-end
-if(current:IsA("Model")and current:FindFirstChild("Humanoid"))or current:IsA("Backpack")then
-return false
-end
+if current==Workspace then return true end
+if(current:IsA("Model")and current:FindFirstChild("Humanoid"))or current:IsA("Backpack")then return false end
 current=current.Parent
 end
 return true
 end
+
 local function isValidName(name)
-if not name or name=="" or #name>50 then
-return false
-end
-if tonumber(name)then
-return false
-end
+if not name or name==""or#name>50 then return false end
+if tonumber(name)then return false end
 local lowerName=string.lower(name)
 local blacklist={"door","house","panel","safe","event","plank","board","wall","floor","window","vent","comic","baseplate","spawn","camera","terrain","code"}
 for _,word in pairs(blacklist)do
-if string.find(lowerName,word)then
-return false
-end
+if string.find(lowerName,word)then return false end
 end
 return true
 end
+
 local function getBestName(obj)
-if obj:IsA("Tool")then
-return obj.Name
-end
+if obj:IsA("Tool")then return obj.Name end
 local tool=obj:FindFirstAncestorOfClass("Tool")
-if tool then
-return tool.Name
-end
+if tool then return tool.Name end
 local model=obj:FindFirstAncestorOfClass("Model")
 if model and model~=Workspace and not model:FindFirstChild("Humanoid")then
-if isValidName(model.Name)then
-return model.Name
-end
+if isValidName(model.Name)then return model.Name end
 end
 return obj.Name
 end
+
 local function isPiggyPlayer(player)
 if player and player:FindFirstChild("PlayerGui")then
 local gui=player.PlayerGui
-if gui:FindFirstChild("Piggy")or gui:FindFirstChild("PiggyUI")or gui:FindFirstChild("Trap")then
-return true
-end
+if gui:FindFirstChild("Piggy")or gui:FindFirstChild("PiggyUI")or gui:FindFirstChild("Trap")then return true end
 end
 if player.Team and player.Team.Name then
 local teamName=string.lower(player.Team.Name)
-if string.find(teamName,"piggy")or string.find(teamName,"infected")or string.find(teamName,"bot")then
-return true
-end
+if string.find(teamName,"piggy")or string.find(teamName,"infected")or string.find(teamName,"bot")then return true end
 end
 return false
 end
+
 local function applyESP(obj,color,displayName)
-if espCache[obj]then
-return
-end
+if espCache[obj]then return end
 pcall(function()
 local hl=Instance.new("Highlight")
 hl.Name="PiggyESP"
@@ -350,18 +324,18 @@ lbl.TextStrokeTransparency=0.5
 espCache[obj]=true
 end)
 end
+
 local function clearESP(obj)
 if obj then
 pcall(function()
 for _,child in pairs(obj:GetChildren())do
-if child.Name=="PiggyESP" or child.Name=="PiggyTag" then
-child:Destroy()
-end
+if child.Name=="PiggyESP"or child.Name=="PiggyTag"then child:Destroy()end
 end
 espCache[obj]=nil
 end)
 end
 end
+
 local function scanItems()
 itemsList={}
 local found={}
@@ -382,11 +356,10 @@ end
 end
 return found,totalCount
 end
+
 local function updateUI()
 for _,child in pairs(ScrollList:GetChildren())do
-if child:IsA("TextButton")or child:IsA("TextLabel")then
-child:Destroy()
-end
+if child:IsA("TextButton")or child:IsA("TextLabel")then child:Destroy()end
 end
 local found,totalCount=scanItems()
 if totalCount>0 then
@@ -423,24 +396,22 @@ btn.BackgroundColor3=Color3.fromRGB(45,45,50)
 btn.TextColor3=Color3.new(1,1,1)
 btn.Font=Enum.Font.SourceSans
 btn.TextSize=14
-btn.MouseButton1Click:Connect(function()
-InputBox.Text=name
-end)
+btn.MouseButton1Click:Connect(function()InputBox.Text=name end)
 end
 end
 end
 ScrollList.CanvasSize=UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y)
 end
+
 spawn(function()
 while wait(1)do
 if not hasScannedOnce then
 updateUI()
-if gameStarted then
-hasScannedOnce=true
-end
+if gameStarted then hasScannedOnce=true end
 end
 end
 end)
+
 spawn(function()
 while wait(SETTINGS.RefreshInterval)do
 if hasScannedOnce and tick()-lastRefreshTime>=SETTINGS.RefreshInterval then
@@ -458,13 +429,13 @@ end
 end
 end
 end)
+
 task.wait(0.5)
 updateUI()
+
 local itemAddedDebounce=false
 Workspace.DescendantAdded:Connect(function(obj)
-if itemAddedDebounce then
-return
-end
+if itemAddedDebounce then return end
 wait(0.1)
 if obj:FindFirstChild("ClickDetector")or obj:FindFirstChild("ProximityPrompt")then
 gameStarted=true
@@ -475,32 +446,29 @@ updateUI()
 itemAddedDebounce=false
 end
 end)
+
 RunService.Stepped:Connect(function()
+if SETTINGS.Noclip_Enabled then
 local char=LocalPlayer.Character
 if char then
 for _,part in pairs(char:GetDescendants())do
 if part:IsA("BasePart")then
-if SETTINGS.Noclip_Enabled then
 part.CanCollide=false
+end
+end
+end
+disableInvisibleWalls()
 else
-if part.Name~="HumanoidRootPart" then
-part.CanCollide=true
-end
-end
-end
-end
+restoreInvisibleWalls()
 end
 end)
+
 local lastUpdate=0
 RunService.Heartbeat:Connect(function()
-if not SETTINGS.ESP_Enabled or tick()-lastUpdate<1 then
-return
-end
+if not SETTINGS.ESP_Enabled or tick()-lastUpdate<1 then return end
 lastUpdate=tick()
 for obj,_ in pairs(espCache)do
-if not obj.Parent then
-clearESP(obj)
-end
+if not obj.Parent then clearESP(obj)end
 end
 for _,player in pairs(Players:GetPlayers())do
 if player~=LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart")then
@@ -511,7 +479,7 @@ for _,model in pairs(Workspace:GetDescendants())do
 local botType=isPiggyBot(model)
 if botType==true then
 applyESP(model,SETTINGS.Enemy_Color,"Piggy")
-elseif botType=="boss" then
+elseif botType=="boss"then
 applyESP(model,Color3.fromRGB(255,0,255),"MR. P")
 end
 end
@@ -523,31 +491,31 @@ end
 end
 end
 end)
+
 ToggleESPBtn.MouseButton1Click:Connect(function()
 SETTINGS.ESP_Enabled=not SETTINGS.ESP_Enabled
-ToggleESPBtn.Text=SETTINGS.ESP_Enabled and "ESP: ON" or "ESP: OFF"
+ToggleESPBtn.Text=SETTINGS.ESP_Enabled and"ESP: ON"or"ESP: OFF"
 ToggleESPBtn.TextColor3=SETTINGS.ESP_Enabled and Color3.new(0,1,0)or Color3.new(1,1,1)
 if not SETTINGS.ESP_Enabled then
-for obj,_ in pairs(espCache)do
-clearESP(obj)
-end
+for obj,_ in pairs(espCache)do clearESP(obj)end
 espCache={}
 end
 end)
+
 ToggleGodmodeBtn.MouseButton1Click:Connect(function()
 SETTINGS.Godmode_Enabled=not SETTINGS.Godmode_Enabled
-ToggleGodmodeBtn.Text=SETTINGS.Godmode_Enabled and "ANTI-PIGGY: ON" or "ANTI-PIGGY: OFF"
+ToggleGodmodeBtn.Text=SETTINGS.Godmode_Enabled and"ANTI-PIGGY: ON"or"ANTI-PIGGY: OFF"
 ToggleGodmodeBtn.TextColor3=SETTINGS.Godmode_Enabled and Color3.new(0,1,0)or Color3.new(1,1,1)
-if not SETTINGS.Godmode_Enabled then
-cleanupAllBots()
-end
+if not SETTINGS.Godmode_Enabled then cleanupAllBots()end
 killedBots={}
 end)
+
 ToggleNoclipBtn.MouseButton1Click:Connect(function()
 SETTINGS.Noclip_Enabled=not SETTINGS.Noclip_Enabled
-ToggleNoclipBtn.Text=SETTINGS.Noclip_Enabled and "NOCLIP: ON" or "NOCLIP: OFF"
+ToggleNoclipBtn.Text=SETTINGS.Noclip_Enabled and"NOCLIP: ON"or"NOCLIP: OFF"
 ToggleNoclipBtn.TextColor3=SETTINGS.Noclip_Enabled and Color3.new(0,1,0)or Color3.new(1,1,1)
 if not SETTINGS.Noclip_Enabled then
+restoreInvisibleWalls()
 local char=LocalPlayer.Character
 if char then
 for _,part in pairs(char:GetDescendants())do
@@ -558,6 +526,7 @@ end
 end
 end
 end)
+
 RefreshBtn.MouseButton1Click:Connect(function()
 RefreshBtn.Text="Loading..."
 RefreshBtn.BackgroundColor3=Color3.fromRGB(100,100,0)
@@ -567,15 +536,12 @@ lastRefreshTime=tick()
 RefreshBtn.Text="REFRESH"
 RefreshBtn.BackgroundColor3=Color3.fromRGB(60,60,65)
 end)
+
 TeleportBtn.MouseButton1Click:Connect(function()
 local targetName=InputBox.Text
-if targetName=="" then
-return
-end
+if targetName==""then return end
 local char=LocalPlayer.Character
-if not char or not char:FindFirstChild("HumanoidRootPart")then
-return
-end
+if not char or not char:FindFirstChild("HumanoidRootPart")then return end
 local startPosition=char.HumanoidRootPart.CFrame
 if itemsList[targetName]then
 for _,obj in pairs(itemsList[targetName])do
@@ -583,16 +549,12 @@ if obj and obj.Parent and isItemUsable(obj)then
 local targetCF
 if obj:IsA("Model")then
 local primaryPart=obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-if primaryPart then
-targetCF=primaryPart.CFrame
-end
+if primaryPart then targetCF=primaryPart.CFrame end
 elseif obj:IsA("BasePart")then
 targetCF=obj.CFrame
 else
 local part=obj:FindFirstChildWhichIsA("BasePart")
-if part then
-targetCF=part.CFrame
-end
+if part then targetCF=part.CFrame end
 end
 if targetCF then
 TeleportBtn.Text="TP..."
@@ -650,6 +612,7 @@ end
 end
 end
 end)
+
 MinimizeBtn.MouseButton1Click:Connect(function()
 isMinimized=not isMinimized
 if isMinimized then
@@ -662,7 +625,6 @@ MinimizeBtn.Text="-"
 ContentFrame.Visible=true
 end
 end)
-CloseBtn.MouseButton1Click:Connect(function()
-ScreenGui:Destroy()
-end)
-print("Piggy V5 Clean")
+
+CloseBtn.MouseButton1Click:Connect(function()ScreenGui:Destroy()end)
+print("Piggy V5 - Noclip Fixed!")
